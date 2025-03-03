@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Voice AI - Google Search</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 50px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 18px;
+      cursor: pointer;
+    }
+    .output {
+      margin-top: 20px;
+      font-size: 20px;
+      color: #333;
+      text-align:
+    }
+    
+  </style>
+</head>
+<body>
+  <h1>AI</h1>
+  <button id="speakButton">Ask Something</button>
+  <div class="output" id="output">Press the button and speak...</div>
+
+  <script>
+    const speakButton = document.getElementById("speakButton");
+    const outputDiv = document.getElementById("output");
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.lang = "en-US"; // "hi-IN" for Hindi
+
+    speakButton.addEventListener("click", () => {
+      outputDiv.textContent = "Listening...";
+      recognition.start();
+    });
+
+    recognition.onresult = async (event) => {
+      const query = event.results[0][0].transcript;
+      outputDiv.textContent = `Searching: ${query}`;
+      fetchGoogleSearch(query);
+    };
+
+    async function fetchGoogleSearch(query) {
+      const apiKey = "AIzaSyBhBjQ5KCZT4UnmWODNekdhq_OgMjja3Ow"; // Yaha apni Google API Key dalein
+      const searchEngineId = "71a35e874ad7e48a0"; // Yaha apni Google Search Engine ID dalein
+      const url = `https://www.googleapis.com/customsearch/v1?q=${encodeURIComponent(query)}&key=${apiKey}&cx=${searchEngineId}`;
+
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+        if (data.items && data.items.length > 0) {
+          const result = data.items[0].snippet;
+          outputDiv.textContent = result;
+          speakResponse(result);
+        } else {
+          outputDiv.textContent = "No results found.";
+          speakResponse("No results found.");
+        }
+      } catch (error) {
+        console.error("Error fetching search results:", error);
+        outputDiv.textContent = "Error fetching data.";
+        speakResponse("Error fetching data.");
+      }
+    }
+
+    function speakResponse(text) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = "en-US"; // Change to "hi-IN" for Hindi
+      speechSynthesis.speak(utterance);
+    }
+  </script>
+</body>
+</html>
